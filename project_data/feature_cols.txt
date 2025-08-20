@@ -1,0 +1,6 @@
+dur
+Spkts
+Dpkts
+sbytes
+dbytes
+ct_srv_src
