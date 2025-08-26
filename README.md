@@ -1,51 +1,54 @@
-Cybersecurity Threat Prioritization System
-This project is a full-stack web application designed to analyze network traffic data and prioritize cybersecurity threats in real-time. It uses a combination of machine learning models and generative AI to provide a comprehensive, data-driven security analysis. The system is built with Gradio for a user-friendly interface, allowing security analysts to upload network logs and receive an AI-generated summary of the most critical threats.
+Overview
+The purpose of this project is to create a full-stack web application that can analyze network traffic data and prioritize cybersecurity threats in real-time.
 
-Project Architecture
-The system operates on a modular, three-part architecture:
+The goal of this system is to predict which network events are most likely to be high-priority threats, combining a classification of known attacks with the detection of new anomalies.
 
-Data Ingestion & Preprocessing: The application takes a network log dataset (e.g., UNSW-NB15) as a CSV file. The data is cleaned, preprocessed, and encoded for use in the machine learning models.
+Business Understanding
+Cybersecurity analysts are often overwhelmed by the sheer volume of network traffic logs, making it nearly impossible to manually review every event for potential threats. A significant amount of time is wasted investigating low-priority or normal events.
 
-Hybrid Threat Analysis Model: The core of the system uses two machine learning models:
+Analysis shows that many critical threats either fit a known attack pattern or are highly unusual in their behavior. Therefore, it is useful to be able to automatically identify and rank threats based on their potential risk.
 
-Random Forest Classifier: This model classifies network events into specific attack categories (e.g., DoS, Fuzzers, Exploits).
+This project aims to build a machine learning system that greatly assists human analysts. By providing a prioritized list of threats, it allows security teams to focus their efforts on the most critical events, improving incident response time and overall network security.
 
-Isolation Forest Anomaly Detector: This model identifies unusual or anomalous network behavior that may not fit a known attack pattern.
+Modeling design and Target variable
+This project uses a hybrid modeling approach with two main components. The target variable for the classification task is the attack_cat (e.g., 'Normal', 'DoS', 'Fuzzers'), which a Random Forest Classifier is trained to predict. The target for the anomaly detection task is the distinction between 'Normal' and 'Anomaly', which the Isolation Forest model identifies.
 
-AI-Powered Threat Summarization & Visualization: The outputs from the models are combined to generate a Priority Score. The top threats are then passed to the Google Gemini API, which generates an executive-level summary. The system also creates interactive visualizations for a clear overview of the threat landscape.
+The final output is not a single binary prediction but a calculated Priority Score. This score combines the confidence from the classification model with the anomaly score from the detection model, creating a continuous ranking that represents the overall threat level of each network event.
+
+Select an evaluation metric
+To determine the best evaluation metric, it's crucial to consider the potential for incorrect predictions:
+
+False Positives: When the system classifies a normal network event as a high-priority threat.
+
+False Negatives: When the system classifies a high-priority threat as a normal, low-priority event.
+
+In this scenario, a false negative is far worse than a false positive. Misclassifying a critical threat could lead to a breach, while a false positive only results in a minor time loss for a human analyst to review a non-malicious event.
+
+Because it is more important to minimize false negatives (i.e., not miss a single critical threat), the primary evaluation metric for this model is recall. The model must successfully identify as many of the actual threats as possible.
+
+What are the ethical implications of building the model?
+The ethical implications of this system are significant and revolve around the trade-off between security and efficiency. The model is designed to be highly sensitive to potential threats, which means it will inevitably produce false positives. While this may cause a minor inconvenience for human analysts, it is an ethical and business necessity to prioritize security.
+
+The worst-case scenario—a catastrophic false negative—could lead to a major data breach or system compromise, which carries immense financial, reputational, and ethical costs. The model is intentionally biased to reduce this risk. The design ensures that even if an event is not a known attack type, it will still be flagged for review if its behavior is anomalous. This approach prioritizes caution and the protection of digital assets above all else.
+
+Modeling and Evaluation
+This project utilizes a powerful hybrid model to ensure comprehensive threat coverage. A Random Forest Classifier is employed to accurately classify known attack types, such as DoS or Fuzzers. At the same time, an Isolation Forest Anomaly Detector is used to identify outliers that do not fit any pre-existing patterns, which is critical for detecting new, unknown threats.
+
+The final evaluation is based on the Priority Score, which is calculated by combining the outputs of both models. This score provides a ranked list of threats, allowing the security team to focus on the events that are most likely to be malicious.
 
 !(https://i.imgur.com/example_pipeline_diagram.png)
 
-Major Steps and Analysis Pipeline
-The project follows a systematic pipeline to process and analyze the uploaded data:
+Conclusion
+Based on the project's design and functionality, I have formulated the following conclusions:
 
-File Upload: A user uploads a network traffic dataset in CSV format via the Gradio interface.
+1. Would you recommend using this model? Why or why not?
+Yes, I would highly recommend using this model. It successfully addresses a critical business problem by providing a data-driven solution for threat prioritization. The hybrid approach, combining both a classification model for known threats and an anomaly detection model for unknown threats, is highly effective and provides a more robust and nuanced security posture than a single-model approach could.
 
-Data Cleaning & Feature Engineering: The raw data is cleaned by handling missing values and dropping irrelevant columns. Categorical features are encoded into numerical values, and the data is standardized for model training.
+2. What was your model doing? Can you explain how it was making predictions?
+The models were analyzing various network traffic features—such as packet size, duration, and the number of bytes transferred—to either classify known attack types or identify highly unusual behaviors. The most predictive features were likely related to traffic patterns that deviate from normal network activity, such as unusually high packet counts or unexpected data flow between source and destination IP addresses. The final priority score was a synthesis of this information, providing a single metric for threat ranking.
 
-Model Training:
+3. Are there new features that you can engineer that might improve model performance?
+The current models perform very well, effectively classifying and prioritizing threats using the available dataset. As such, there is no immediate need for new engineered features to improve the core predictive performance.
 
-A Random Forest Classifier is trained on the labeled 'Normal' and 'Attack' data to learn the characteristics of different attack categories.
-
-An Isolation Forest model is trained on only the 'Normal' data to learn what normal network behavior looks like.
-
-Threat Prioritization: Each network event is evaluated by both models. A Priority Score is calculated by combining the classification confidence from the Random Forest model and the anomaly score from the Isolation Forest model. This score allows the system to rank threats, bringing the most dangerous and anomalous events to the top.
-
-AI Summary Generation: The top 20 prioritized threats, along with their key features (e.g., source IP, destination IP, attack category), are converted to a JSON format. This data is then sent to the Gemini API with a prompt that instructs the model to act as a senior cybersecurity analyst and provide a concise summary.
-
-Interactive Visualizations: The system generates two plots using Plotly Express:
-
-A pie chart showing the distribution of the top attack categories.
-
-A line chart that visualizes threat events over time, helping to identify any spikes in malicious activity.
-
-Output Display: The final prioritized threat table, the AI-generated summary, and the visualizations are all displayed in the Gradio interface.
-
-How to Run the Project
-Clone the repository: git clone [repository-url]
-
-Install dependencies: pip install -r requirements.txt (The requirements.txt should include pandas, scikit-learn, numpy, gradio, plotly, requests)
-
-Run the application: python app.py
-
-Note: You will need to replace the API key in the app.py file with your own Gemini API key for the AI summarization feature to work.
+4. What features would you want to have that would likely improve the performance of your model?
+To further enhance the model and provide more context for human analysts, it would be beneficial to include features not present in the current dataset. I would want to have data such as the geographical location of source IP addresses, known malicious IP blacklists, and historical threat intelligence data. Having a feature for the total number of times a specific event was reported by other users would also be extremely valuable.
