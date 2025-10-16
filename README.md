@@ -60,7 +60,6 @@ The **Priority Score** is the final evaluation metric, combining outputs from bo
 
 This ranking enables security teams to focus on the most likely malicious events.
 
-![Pipeline Diagram](https://i.imgur.com/example_pipeline_diagram.png)
 
 ---
 
@@ -89,3 +88,4 @@ Future improvements could include:
 These would provide richer context for predictions and make the model even more effective for real-world deployments.
 
 ---
+
